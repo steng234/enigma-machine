@@ -6,7 +6,9 @@ $reflector='YRUHQSLDPXNGOKMIEBFZCWVJAT';
 $rotor1Pos=0;
 $rotor2Pos=0;
 $rotor3Pos=0;
-
+$rotor1in=0;
+$rotor2in=0;
+$rotor3in=0;
 function encryptLetter($letter, $rotor, $position){
     $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $pos = strpos($alphabet, $letter);
@@ -46,7 +48,7 @@ function enigmaDecrypt($inputText,$plugPairs){
    
     $decryptedText = '';
     $inputText = strtoupper($inputText);
-    for ($i = strlen($inputText); $i >=0; $i--) {
+    for ($i = 0; $i <strlen($inputText); $i++) {
         $letter = $inputText[$i];
         if (ctype_alpha($letter)) {
             $letter = plugboard($letter, $plugPairs);
@@ -61,20 +63,20 @@ function enigmaDecrypt($inputText,$plugPairs){
 
             $decryptedText.=$letter;
 
-            if ($i>0) {
-                if ($rotor1Pos<=0){$rotor1Pos=25;$rotor2Pos--;
-                    if($rotor2Pos<=0){$rotor2Pos=25;$rotor3Pos--;
-                        if($rotor3Pos<=0){$rotor3Pos=25;
-                        }else{$rotor3Pos--;}
-                    }else{$rotor2Pos--;}
-                }else{$rotor1Pos--;}
+            if ($i < strlen($inputText)-1){
+                if ($rotor1Pos>=25){$rotor1Pos=0;$rotor2Pos++;
+                    if($rotor2Pos>=25){$rotor2Pos=0;$rotor3Pos++;
+                        if($rotor3Pos>=25){$rotor3Pos=0;
+                        }else{$rotor3Pos++;}
+                    }else{$rotor2Pos++;}
+                }else{$rotor1Pos++;}
             }
 
         } else {
             $decryptedText.=$letter;
         }
     }
-    return $decryptedText;
+    return strrev($decryptedText);
 }
 function enigmaEncrypt($inputText,$plugPairs){
     global $firstRotor;
@@ -110,8 +112,7 @@ function enigmaEncrypt($inputText,$plugPairs){
                     }else{$rotor2Pos++;}
                 }else{$rotor1Pos++;}
 
-               // DA CONTROLLARE MEGLIO DOMANI 
-               // if ($rotor1Pos==25 && $rotor2Pos==25 && $rotor3Pos==25) {$rotor1Pos=0;$rotor2Pos=0;$rotor3Pos=0;}
+               
             }
         }else{$encryptedText.= $letter;}
     }
@@ -158,10 +159,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     global $rotor1Pos;
     global $rotor2Pos;
     global $rotor3Pos;
+    global $rotor1in;
+    global $rotor2in;
+    global $rotor3in;
 
     $rotor1setup=$_POST["setupRotor1"];
     $rotor2setup=$_POST["setupRotor2"];
     $rotor3setup=$_POST["setupRotor3"];
+
+   
+    $rotor1in = isset($_POST["rotor1"]) ? $_POST["rotor1"] % 26 : 0;
+    $rotor2in = isset($_POST["rotor2"]) ? $_POST["rotor2"] % 26 : 0;
+    $rotor3in = isset($_POST["rotor3"]) ? $_POST["rotor3"] % 26 : 0;
 
     $rotor1Pos = isset($_POST["rotor1"]) ? $_POST["rotor1"] % 26 : 0;
     $rotor2Pos = isset($_POST["rotor2"]) ? $_POST["rotor2"] % 26 : 0;
@@ -204,7 +213,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <link href="https://cdn.jsdelivr.net/npm/daisyui@3.9.3/dist/full.css" rel="stylesheet" type="text/css" />
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <link href="/ste/dist/output.css" rel="stylesheet">
-<body class="h-full">
+<body class="h-full relative">
+    
 
 <div class="navbar bg-gray-200 rounded-lg">
 
@@ -220,11 +230,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 </div>
 
-<div id="app" class="md:grid md:grid-cols-3 gap-4 ">
+<div id="app" class="lg:grid lg:grid-cols-3 gap-4 relative">
 
     <div> </div>
-
-    <form class="w-full max-w-sm mx-auto flex item-center justify-center " method="post"  name = "post">
+<div>
+    <form class="w-full max-w-sm mx-auto flex item-center justify-center relative" method="post"  name = "post">
         <div class=" w-2/3 ">
      
             <div class="grid grid-cols-3 gap-2 flex item-center justify-center">
@@ -307,28 +317,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </div>
                 </div>
             </div>
-</form>
-        </div>
-    <div><?php if (isset($encryptedText)): ?>
-        <h2>Encrypted Text: <?= $encryptedText ?> </h2>
-        <h2>with this option</h2>
-        <h2>rotor1 <?php echo $rotor1setup; ?></h2>
-        <h2>rotor2 <?php echo $rotor2setup; ?></h2>
-        <h2>rotor3 <?php echo $rotor3setup; ?></h2>
-        <h2>rotor1 position <?php echo $rotor1Pos;?></h2>
-        <h2>rotor2 position <?php echo $rotor2Pos; ?></h2>
-        <h2>rotor3 position <?php echo $rotor3Pos; ?></h2>
-        <h2>plugboard pair <?php echo implode(" ", $plugPairs); ?></h2>
-    <?php endif; ?></div>
-
-
 
     
+            <?php if (isset($encryptedText)): ?>
+   
+    
+        <h2 class="text-3xl font-bold mb-4">Encrypted Text: <?= $encryptedText ?></h2>
+        <div class="mb-4">
+            <h3 class="text-lg font-semibold">with this option</h3>
+            <ul>
+            <li>rotor1: <?= $rotor1setup ?></li>
+            <li>rotor2: <?= $rotor2setup ?></li>
+            <li>rotor3: <?= $rotor3setup ?></li>
+            <li>rotor1 position: <?= $rotor1in ?></li>
+            <li>rotor2 position: <?= $rotor2in ?></li>
+            <li>rotor3 position: <?= $rotor3in ?></li>
+            <li>plugboard pair: <?= implode(" ", $plugPairs) ?></li>
+            </ul>
+            <button id="pop-up">close</button>
+        </div>
+        
+  
+    <?php endif; ?>
+</form>
+
 </div>
 
-    
 
+</div>
 
+</body>
     <script>
     const app = Vue.createApp({
 
@@ -347,12 +365,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 filteredOptions3: ['I', 'II', 'III', 'IV', 'V'],
                 showKeyboard: false,
                 availableLetters: '<?= isset($avalaibleLetterForPlugboard)?  $avalaibleLetterForPlugboard :  "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ?>',
+                showDismissibleAlert: true,
+   
             }
         },
 
         watch: {
         plugBoard(newVal) {
             if (newVal.length % 3 === 2) {this.plugBoard += ' ';}
+            
         },
 
 
@@ -396,7 +417,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }).mount('#app');
 
-
+    const popup = Vue.createApp({
+    }).mount('#pupup');
+    
     </script>
-</body>
+
 </html>
