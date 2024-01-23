@@ -166,7 +166,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $rotor1setup=$_POST["setupRotor1"];
     $rotor2setup=$_POST["setupRotor2"];
     $rotor3setup=$_POST["setupRotor3"];
-
+    $popup= true;
    
     $rotor1in = isset($_POST["rotor1"]) ? $_POST["rotor1"] % 26 : 0;
     $rotor2in = isset($_POST["rotor2"]) ? $_POST["rotor2"] % 26 : 0;
@@ -183,14 +183,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     setupTheRotor($rotor1setup,$rotor2setup,$rotor3setup);
 
-    if ($_POST["radio-10"]==1){
-        $encryptedText = enigmaEncrypt($inputText, $plugPairs);
-    }
-
-    if ($_POST["radio-10"]==2){
-        $encryptedText = strrev(enigmaDecrypt($inputText, $plugPairs));
-
-    }
+   
 
     $avalaibleLetter = str_split('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
     $plugIn = str_split($_POST["plugPairs"]);
@@ -199,10 +192,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             if ($avalaibleLetter[$j] === $plugIn[$i]) {unset($avalaibleLetter[$j]);}
         }
     }
-
     $avalaibleLetterForPlugboard = implode('', $avalaibleLetter );
 
+
+    if($_POST["prova"]=="illi"){$popup= false;}else{
+
+
+        if ($_POST["radio-10"]==1){
+            $encryptedText = enigmaEncrypt($inputText, $plugPairs);
+        }
+    
+        if ($_POST["radio-10"]==2){
+            $encryptedText = strrev(enigmaDecrypt($inputText, $plugPairs));
+    
+        }
+    }
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -311,40 +317,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <div>
                 <div class="flex item-center justify-center" >
                     <div class="">
-                        <button class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit" value="Encript">
+                        <button class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit" name="prova"value="Encript">
                             Click Me!!
                         </button>
                     </div>
                 </div>
-            </div>
+            </div>      
 
-    
-            <?php if (isset($encryptedText)): ?>
-   
-    
-        <h2 class="text-3xl font-bold mb-4">Encrypted Text: <?= $encryptedText ?></h2>
-        <div class="mb-4">
-            <h3 class="text-lg font-semibold">with this option</h3>
-            <ul>
-            <li>rotor1: <?= $rotor1setup ?></li>
-            <li>rotor2: <?= $rotor2setup ?></li>
-            <li>rotor3: <?= $rotor3setup ?></li>
-            <li>rotor1 position: <?= $rotor1in ?></li>
-            <li>rotor2 position: <?= $rotor2in ?></li>
-            <li>rotor3 position: <?= $rotor3in ?></li>
-            <li>plugboard pair: <?= implode(" ", $plugPairs) ?></li>
-            </ul>
-            <button id="pop-up">close</button>
-        </div>
+            <?php if ($popup): ?>
+<div x-data="{ showModal: true }" id="popup">
+  <div 
+    x-show="showModal" 
+    class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-80 z-50">
+    <!-- Modal content -->
+    <div class="bg-white p-8 rounded-lg max-w-md">
+      <h2 class="text-3xl font-bold mb-4">Encrypted Text: <?= $encryptedText ?></h2>
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold">with this option</h3>
+        <ul>
+          <li>rotor1: <?= $rotor1setup ?></li>
+          <li>rotor2: <?= $rotor2setup ?></li>
+          <li>rotor3: <?= $rotor3setup ?></li>
+          <li>rotor1 position: <?= $rotor1in ?></li>
+          <li>rotor2 position: <?= $rotor2in ?></li>
+          <li>rotor3 position: <?= $rotor3in ?></li>
+          <li>plugboard pair: <?= implode(" ", $plugPairs) ?></li>
+        </ul>
+      </div>
+            <button class="shadow bg-purple-500 hover:bg-purple-400 focus:shadow-outline focus:outline-none text-white font-bold py-2 px-4 rounded" type="submit" name="prova" value="illi">
+            Click Me!!
+            </button>
         
-  
+    </div>
+
     <?php endif; ?>
-</form>
+        </form>
+    </div>
+
 
 </div>
 
-
-</div>
 
 </body>
     <script>
